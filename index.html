@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Job Posts</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Left section: Form -->
+        <div class="form-section">
+            <h2>Filter Job Posts</h2>
+            <form id="jobForm">
+
+                <div class="form-group">
+                    <label for="role">Preferred Role</label>
+                    <select id="role" name="role" required>
+                        <option value="">Position</option>
+                        <option value="Intern">Intern</option>
+                        <option value="Software Engineer">Software Engineer</option>
+                        <option value="Cyber Security">Cyber Security</option>
+                        <option value="Devops">Devops</option>
+                        <option value="Cloud">Cloud</option>
+                        <option value="Web">Web Developer</option>
+                        <option value="Full Stack Developer">Full Stack Developer</option>
+                        <option value="Frontend">Frontend Developer</option>
+                        <option value="UI/UX">UI/UX</option>
+                        <option value="Analyst">Analyst</option>
+                        <option value="QA">QA</option>
+                        <option value="Test">Testing</option>
+                        <option value="Consultant">Consultant</option>
+                        <option value="Data Engineer">Data Engineer</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Data Science">Data Science</option>
+                        <option value="System Engineer">System Engineer</option>
+                        <option value="Graduate Engineer Trainee">Graduate Engineer Trainee</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="batch">Batch</label>
+                    <input type="text" id="batch" name="batch" placeholder="Enter Your Batch (recommended)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Preferred Location</label>
+                    <select id="location" name="location">
+                        <option value="">Select a location</option>
+                        <option value="Pune, India">Pune, India</option>
+                        <option value="Bangalore, India">Bangalore, India</option>
+                        <option value="Hyderabad, India">Hyderabad, India</option>
+                        <option value="Mumbai, India">Mumbai, India</option>
+                        <option value="Delhi, India">Delhi, India</option>
+                        <option value="Gurgaon, India">Gurgaon, India</option>
+                        <option value="Noida, India">Noida, India</option>
+                        <option value="Chennai, India">Chennai, India</option>
+                        <option value="Work-from-home">Work From Home</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="text" id="user_email" name="user_email" placeholder="Enter your email" required />
+                </div>
+                <div class="form-group">
+                    <label for="app_password">Gmail App Password</label>
+                    <input type="password" id="app_password" name="app_password"
+                        placeholder="Enter your Gmail App Password" required />
+                </div>
+                <div class="form-group">
+                    <label for="desired_salary">Your Preferred Salary (in LPA)</label>
+                    <input type="number" id="desired_salary" name="desired_salary"
+                        placeholder="Enter your desired salary in LPA" />
+                </div>
+
+                <div class="form-group">
+                    <label for="hr-email">HR's Data</label>
+                    <textarea id="hr-email" name="HR-email" placeholder="Enter HR's data (e.g., email, name, roles)"
+                        rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="email_content">Email Body</label>
+                    <textarea id="email_content" name="email_content"
+                        placeholder="Use variables {role}, {company}, {hr_name} only" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+            <div id="loading" style="display:none;">Loading...</div>
+            <div id="result"></div> <!-- To display the response from the backend -->
+        </div>
+
+        <!-- Right section: Contact Info -->
+        <div class="contact-section">
+            <h3>HIRED</h3>
+            <p>HIRED addresses the challenge of bridging the gap between job seekers and hiring managers, specifically
+                enhancing the likelihood of being shortlisted. Job seekers often struggle with identifying relevant
+                opportunities, finding HR contact details, and effectively communicating their profiles. By leveraging
+                cold emailing, HIRED automates the process of discovering suitable roles, filtering opportunities based
+                on user preferences, and sending personalized applications directly to HRs, saving users time and effort
+                while increasing their outreach impact.</p>
+            <p><b> Email example: </b><br>
+                Dear {hr_name}, <br><br>
+
+                My name is Sarthak and I'm in my final year of BTech at IIT Roorkee. I recently came across the job
+                opening for {role} at {company} and am really interested in this opportunity.
+                <br><br>
+                I have skills in Python, Django, React, JavaScript, MySQL, Docker, CI/CD, and Git. I also interned as a
+                Web Developer at IIT Roorkee.
+                <br><br>
+                I believe that I could be a great fit for this role and would love to discuss further if my profile
+                seems interesting.
+                <br><br>
+                Attaching my resume for your reference.
+                <br><br>
+                Best Regards,<br>
+                Sarthak Rangari
+            </p>
+
+        </div>
+    </div>
+    <script>
+        document.getElementById("jobForm").addEventListener("submit", async function (event) {
+            event.preventDefault();  // Prevent form submission (default behavior)
+
+            // Show loading animation
+            document.getElementById("loading").style.display = "block";
+
+            // Get form data
+            const formData = new FormData(this);
+
+            // Prepare the data to send
+            const data = {
+                role: formData.get("role")?.trim() || "",
+                batch: formData.get("batch")?.trim() || "",
+                location: formData.get("location")?.trim() || "",
+                desired_salary: formData.get("desired_salary")?.trim() || "",
+                user_email: formData.get("user_email")?.trim() || "",
+                app_password: formData.get("app_password")?.trim() || "",
+                email_content: formData.get("email_content")?.trim() || ""
+            };
+            console.log("Request Payload:", data);
+            try {
+                // Send a POST request to FastAPI backend
+                const response = await fetch("http://127.0.0.1:8000/run_script/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Check for successful status code
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                console / log(response.status)
+                // Parse JSON response
+                const result = await response.json();
+                console.log(result)
+                // Hide loading animation
+                document.getElementById("loading").style.display = "none";
+
+                // Display the result from the backend
+                if (result.error) {
+                    document.getElementById("result").innerText = `Error: ${result.error}`;
+                } else {
+                    document.getElementById("result").innerText = `Output: ${result.result}`;
+                }
+            } catch (error) {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("result").innerText = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+
+</html>
