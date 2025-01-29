@@ -1,0 +1,165 @@
+# Version format ex. "0.0.1"
+version: "1.0.0" # Flow specification version
+
+# Basic metadata for the agent
+metadata:
+  flow_type: "compound"
+  name: "Mail-to-Hrs" # Unique identifier
+  description: "This flow extracts all the job opportunities posted on the URL and sends emails to all the available emails of hrs" # Flow purpose
+  author: "tinky-devops" # Must match your account username
+  tags: [data, url, job] # Keywords for categorization
+  private: true # Access control setting
+
+
+# INPUTS
+inputs:
+  role: # First input parameter
+    type: string # Currently only String format
+    description: "Job Role"
+    required: true
+    example: "Software Engineer"
+
+  email: 
+    type: string 
+    description: "personal email"
+    required: true
+    example: "abc@hr.gmail.com"
+
+  hr_data: 
+    type: string
+    description: "personal email"
+    required: true
+    example: "email: hr1@techcorp.com, name: Vishvas, company: TechCorp, roles: Software Engineer|Backend Developer"
+
+
+# WORKFLOWS
+workflow:
+  job_data_scraper_flow:
+    type: "custom"
+    inputs:
+      role: ${inputs.role}
+    model:
+      provider: "anthropic"                            # e.g., anthropic, openai, meta, etc.
+      name: "claude-3.5-sonnet" 
+    prompt: "
+      From the below given data filter the job postings for the role of {role} only and return the each filtered jobs in the format:
+      Company: company_name
+      Role: role
+      Batch: batch
+      Location: location
+      Qualification: qualification
+      Salary: salary
+
+      (Note: Please strictly just return the list of the filtered jobs only in the given format and no extra text. If no job matches the role {role} then return just 'No job available for this role')
+
+      Data to use: 
+      '''
+        Company : Ministry of Road Transport & Highways (HOAI)
+        Role : Road Safety Hackathon
+        Batch : 2028 | 2027 | 2026 | 2025
+        Location : Online
+        Qualification : All College Students Eligible
+        Salary : Internship Opportunity
+
+        Company : Rockwell Automation
+        Role : Graduate Engineer Trainee
+        Batch : 2025 | 2024
+        Location : Noida, India
+        Qualification : BE/BTech (Electronics, Electrical and Instrumentation stream)
+        Salary : 5-7 LPA (Expected)
+
+        Company : Appinventiv
+        Role : Engineer Intern
+        Batch : 2025
+        Location : Noida, India
+        Qualification : Bachelors/Masters degree in Engineering, Computer Science
+        Salary : 30K/ Month (Expected) Stipend
+
+        Company : CARS24
+        Role : Software interns
+        Batch : 2025 | 2024 | 2023
+        Location : Gurgaon, India
+        Qualification : With desired skills
+        Salary : 6 – 8 LPA (Expected)
+
+        Company : HackerEarth
+        Role : Technical Engineer - Internship (Programming )
+        Batch : 2026 | 2025
+        Location : Bengaluru, India
+        Qualification : College Student
+        Salary : 50K/month(Stipend)
+
+        Company : nne
+        Role : Trainee Engineer
+        Batch : 2025 | 2024
+        Location : Bengaluru, India
+        Qualification : Engineering degree in Biotechnology/ pharmaceutical/ Chemical/ Mechanical / Mechatronics/ Electrical / Electronics / Instrumentation/ CS/ Robotics & automation
+        Salary : 5-8 LPA (Expected)
+
+        Company : Micro1
+        Role : Sales Operations Specialist - AI Trainer
+        Batch : Freshers/Experienced
+        Location : Work-from-home
+        Qualification : Experience with AI training and model development, or using AI adjacent tools
+        Salary : 6 LPA (Expected)
+
+        Company : Changepond
+        Role : Fresher_Software Developers and Testers
+        Batch : 2024 | 2023 | 2022
+        Location : Chennai, India
+        Qualification : BCA/B.Sc/ MS/ M.Sc/ BE/B-Tech/ME/M-Tech/MCA- CSE / IT / ECE / EEE
+        Salary : 4 - 6 LPA(Expected)
+
+        Company : Google
+        Role : Technical Solutions Consultant
+        Batch : Freshers/Experienced
+        Location : Bengaluru, Hyderabad
+        Qualification : Bachelors degree or equivalent practical experience
+        Salary : 19 LPA (Expected)
+
+        Company : Oracle
+        Role : Associate Test Automation Engineer
+        Batch : Experience
+        Location : Bengaluru, India
+        Qualification : With desired skills
+        Salary : 7 - 10 LPA (Expected)
+      '''
+      Please return the jobs only for role of {role}
+    "  
+
+  #FLOW2            
+  job_hr_info_matcher_flow:
+    type: "custom"
+    depends_on: [job_data_scraper_flow]
+    inputs:
+      hr_data: ${inputs.hr_data}
+      job_data: ${job_data_scraper_flow.output}
+    model:
+      provider: "anthropic"                            # e.g., anthropic, openai, meta, etc.
+      name: "claude-3.5-sonnet"
+    prompt: "
+  {job_data}
+  HR Email List:
+  '''
+  {hr_data}
+  '''
+
+  For each job posting, list the following details:
+
+  company: company name,
+  name: name of HR,
+  email: HR email if available, or blank if not available,
+  role: Role
+
+  Note (important) - Provide output as a JSON array (list of dictionaries) without enclosing it in backticks or any other formatting markers.
+"
+
+
+output:
+  value:
+    - ${job_hr_info_matcher_flow.output}
+
+# ReadME configuration
+readme: |
+  Nothing to say...
+
