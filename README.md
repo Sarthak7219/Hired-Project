@@ -35,7 +35,7 @@
 1. Start the backend server:
 
    ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   uvicorn main:app --reload 
 
 2. Open index.html in your browser (e.g., http://127.0.0.1:5500/index.html).
 
