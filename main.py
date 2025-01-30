@@ -1,8 +1,10 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, File, Form, UploadFile
 from dotenv import load_dotenv
 from utils.flow import process_input
 from fastapi.middleware.cors import CORSMiddleware
+import shutil
+import os, json
+import tempfile
 # Load environment variables from .env file
 load_dotenv()
 
@@ -16,15 +18,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-# Define the data model for request input
-class InputData(BaseModel):
-    role: str
-    batch: str
-    location: str
-    desired_salary: int
-    user_email: str
-    app_password: str
-    email_content: str
 
 @app.get("/")
 async def api_check():
@@ -32,21 +25,38 @@ async def api_check():
 
 # Route to handle input data
 @app.post("/run_script")
-async def run_script(data: InputData):
-    print("API called!")
-    role = data.role
-    batch = data.batch
-    location = data.location
-    desired_salary = data.desired_salary
-    user_email = data.user_email
-    app_password = data.app_password
-    email_content = data.email_content
+async def run_script(
+    role: str = Form(...),
+    batch: str = Form(...),
+    location: str = Form(...),
+    desired_salary: int = Form(...),
+    user_email: str = Form(...),
+    app_password: str = Form(...),
+    email_content: str = Form(...),
+    hr_data: str = Form(...),  # Get HR data as a string (we'll parse it)
+    resume: UploadFile = File(...),  # Use UploadFile for file handling
+):
 
     try:
-        #ex:- process_input(role: str, batch:str, location:str, desired_salary:int, user_email: str)
-        # process_input("Software Engineer", "2025", "", 12, "sarthakrangari788@gmail.com")
-        output = process_input(role, batch, location, desired_salary, user_email, app_password, email_content)
+        
+        try:
+            hr_data_list = json.loads(hr_data)
+        except json.JSONDecodeError:
+            return {"error": "Invalid HR data format"}
+
+
+
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            temp_file_path = tmp_file.name
+            # Save the resume to the temporary file
+            with open(temp_file_path, "wb") as f:
+                shutil.copyfileobj(resume.file, f)
+
+        output = process_input(role, batch, location, desired_salary, user_email, app_password, email_content, hr_data_list , temp_file_path)
         print(f"Process output: {output}")
+
+        # Remove the temporary file after processing
+        os.remove(temp_file_path)
         return {"result": output}
     
     except Exception as e:

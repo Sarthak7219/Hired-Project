@@ -13,7 +13,7 @@
         <!-- Left section: Form -->
         <div class="form-section">
             <h2>Filter Job Posts</h2>
-            <form id="jobForm">
+            <form id="jobForm" enctype="multipart/form-data">
 
                 <div class="form-group">
                     <label for="role">Preferred Role</label>
@@ -78,14 +78,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="hr-data">HR's Data</label>
-                    <textarea id="hr-data" name="hr-data" placeholder="Enter HR's data (e.g., email, name, roles)"
+                    <label for="hr_data">HR's Data</label>
+                    <textarea id="hr_data" name="hr_data"
+                        placeholder="Provide a list of dictionaries with HR's 'name', 'email' and 'company' in DOUBLE QUOTES*"
                         rows="4"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="email_content">Email Body</label>
                     <textarea id="email_content" name="email_content"
                         placeholder="Use variables {role}, {company}, {hr_name} only" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="resume">Upload Resume (Recommended)</label>
+                    <input type="file" id="resume" name="resume" />
                 </div>
 
                 <div class="form-group">
@@ -105,7 +110,19 @@
                 cold emailing, HIRED automates the process of discovering suitable roles, filtering opportunities based
                 on user preferences, and sending personalized applications directly to HRs, saving users time and effort
                 while increasing their outreach impact.</p>
-            <p><b> Email example: </b><br>
+
+
+            <p style="font-size: 10px;"><b style="font-size: 14px;"> HR Data example: </b><br><br>
+
+
+                [
+                {"name": "John Doe", "email": "john.doe@abc.com", "company": "Caterpillar"},
+                {"name": "Jane Smith", "email": "jane.smith@xyz.com", "company": "Fortanix"}
+                ]
+            </p>
+            <p style="font-size: 10px;"><b style="font-size: 14px;"> Email example: </b><br><br>
+
+
                 Dear {hr_name}, <br><br>
 
                 My name is Sarthak and I'm in my final year of BTech at IIT Roorkee. I recently came across the job
@@ -135,27 +152,24 @@
 
             // Get form data
             const formData = new FormData(this);
+            const hrDataString = formData.get("hr_data")?.trim() || "";
+            let hrData = [];
+            try {
+                // Parse the HR data string into a list of dictionaries
+                hrData = JSON.parse(hrDataString);
+            } catch (error) {
+                console.error("Invalid HR data format:", error);
+                document.getElementById("result").innerText = "Error: Invalid HR data format!";
+                document.getElementById("loading").style.display = "none";
+                return;
+            }
 
-            // Prepare the data to send
-            const data = {
-                role: formData.get("role")?.trim() || "",
-                batch: formData.get("batch")?.trim() || "",
-                location: formData.get("location")?.trim() || "",
-                desired_salary: parseInt(formData.get("desired_salary")?.trim()) || 0,
-                user_email: formData.get("user_email")?.trim() || "",
-                app_password: formData.get("app_password")?.trim() || "",
-                email_content: formData.get("email_content")?.trim() || ""
-            };
-            console.log("Request Payload:", data);
             try {
                 console.log("Sending request to backend...");
                 // Send a POST request to FastAPI backend
                 const response = await fetch("http://127.0.0.1:8000/run_script", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
+                    body: formData,
                 });
 
                 // Check for successful status code

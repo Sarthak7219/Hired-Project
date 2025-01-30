@@ -25,11 +25,6 @@ def merge_jobs_and_hrs(jobs: list[dict], hrs: list[dict]) -> list[dict]:
     
     return merged_data
 
-hrs = [
-    {"name": "John Doe", "email": "john.doe@abc.com", "company": "Caterpillar"},
-    {"name": "Jane Smith", "email": "jane.smith@xyz.com", "company": "Fortanix"},
-]
-
 
 ##Email sender function ----------->
 def send_emails(job_hr_data_filtered: list[dict], sender_email: str, user_email:str, sender_password: str, file_path: str, job_data: list[dict], email_content: str):
@@ -139,20 +134,20 @@ The file 'All_Job_Opportunities.csv' contains all the relevant job opportunities
             os.remove(hr_jobs_csv_file)
 
 
-def process_input(role: str, batch:str, location:str, desired_salary:int, user_email: str, app_password: str, email_content:str) -> str:
+def process_input(role: str, batch:str, location:str, desired_salary:int, user_email: str, app_password: str, email_content:str, hr_data: list[dict], temp_file_path: str) -> str:
 # -----Flow1-----
    
     jobs = data_scraper(role, batch, location, desired_salary) #--> List of dict
     # print("Relevant jobs: ",jobs)
 
 
-    job_hr_data_filtered = merge_jobs_and_hrs(jobs, hrs)
+    job_hr_data_filtered = merge_jobs_and_hrs(jobs, hr_data)
     if not job_hr_data_filtered:
         print("HR data didn't match any jobs posting")
 
     ##Send mail to all the HRs
     if jobs:
-        send_emails(job_hr_data_filtered, user_email, user_email, app_password, "files/Sarthak_Resume.pdf", jobs, email_content)
+        send_emails(job_hr_data_filtered, user_email, user_email, app_password, temp_file_path, jobs, email_content)
     else: 
         return "No relevant jobs found!"
     
