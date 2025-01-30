@@ -48,10 +48,7 @@ def send_emails(job_hr_data_filtered: list[dict], sender_email: str, user_email:
                 writer = csv.DictWriter(file, fieldnames=job_data[0].keys())
                 writer.writeheader()
                 writer.writerows(job_data)
-            with open(hr_jobs_csv_file, mode='w', newline='') as file:
-                writer = csv.DictWriter(file, fieldnames=job_hr_data_filtered[0].keys())
-                writer.writeheader()
-                writer.writerows(job_hr_data_filtered)
+            
 
             # Create the email content to send the user's email
             message = MIMEMultipart()
@@ -71,22 +68,29 @@ The file 'All_Job_Opportunities.csv' contains all the relevant job opportunities
                 encoders.encode_base64(part)
                 part.add_header("Content-Disposition", f"attachment; filename=All_Job_Opportunities.csv")
                 message.attach(part)
-            with open(hr_jobs_csv_file, "rb") as attachment:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(attachment.read())
-                encoders.encode_base64(part)
-                part.add_header("Content-Disposition", f"attachment; filename=Mailed_Jobs.csv")
-                message.attach(part)
+            
+
+            if job_hr_data_filtered:
+
+                try:
+                    with open(hr_jobs_csv_file, mode='w', newline='') as file:
+                        writer = csv.DictWriter(file, fieldnames=job_hr_data_filtered[0].keys())
+                        writer.writeheader()
+                        writer.writerows(job_hr_data_filtered)
+                    with open(hr_jobs_csv_file, "rb") as attachment:
+                        part = MIMEBase("application", "octet-stream")
+                        part.set_payload(attachment.read())
+                        encoders.encode_base64(part)
+                        part.add_header("Content-Disposition", f"attachment; filename=Mailed_Jobs.csv")
+                        message.attach(part)
+                except Exception as e:
+                    print(f"Error creating CSV file: {e}")
 
             # Send the email
             server.sendmail(sender_email, user_email, message.as_string())
             print(f"Email sent to the user {user_email} with the attached files.")
         except Exception as e:
             print(f"Error creating CSV file: {e}")
-            if os.path.exists(all_jobs_csv_file):
-                os.remove(all_jobs_csv_file)
-            if os.path.exists(hr_jobs_csv_file):
-                os.remove(hr_jobs_csv_file)
         
 
         for entry in job_hr_data_filtered:
@@ -120,7 +124,7 @@ The file 'All_Job_Opportunities.csv' contains all the relevant job opportunities
             # Send the email
             try:
                 server.sendmail(sender_email, hr_email, message.as_string())
-                print(f"Email sent to {hr_email} for {role} at {company}")
+                # print(f"Email sent to {hr_email} for {role} at {company}")
             except Exception as e:
                 print("An error occurred while sending mail:", e)
 
@@ -143,10 +147,15 @@ def process_input(role: str, batch:str, location:str, desired_salary:int, user_e
 
 
     job_hr_data_filtered = merge_jobs_and_hrs(jobs, hrs)
+    if not job_hr_data_filtered:
+        print("HR data didn't match any jobs posting")
 
     ##Send mail to all the HRs
-    send_emails(job_hr_data_filtered, user_email, user_email, app_password, "files/Sarthak_Resume.pdf", jobs, email_content)
-
+    if jobs:
+        send_emails(job_hr_data_filtered, user_email, user_email, app_password, "files/Sarthak_Resume.pdf", jobs, email_content)
+    else: 
+        return "No relevant jobs found!"
+    
     return "Emails sent successfully!"
 
 

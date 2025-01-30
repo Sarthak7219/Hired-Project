@@ -11,7 +11,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],  # Allow all origins, or specify specific domains
+    allow_origins=["*"],  # Allow all origins, or specify specific domains
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
@@ -46,9 +46,11 @@ async def run_script(data: InputData):
         #ex:- process_input(role: str, batch:str, location:str, desired_salary:int, user_email: str)
         # process_input("Software Engineer", "2025", "", 12, "sarthakrangari788@gmail.com")
         output = process_input(role, batch, location, desired_salary, user_email, app_password, email_content)
+        print(f"Process output: {output}")
         return {"result": output}
     
     except Exception as e:
+        print(f"Error in process_input: {e}")
         return {"error": str(e)}
     # return {"result": "Data received!"}
     

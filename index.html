@@ -62,13 +62,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="text" id="user_email" name="user_email" placeholder="Enter your email" required />
+                    <label for="user_email">Email</label>
+                    <input type="text" id="user_email" name="user_email" placeholder="Enter your email"
+                        autocomplete="username" required />
                 </div>
                 <div class="form-group">
                     <label for="app_password">Gmail App Password</label>
                     <input type="password" id="app_password" name="app_password"
-                        placeholder="Enter your Gmail App Password" required />
+                        placeholder="Enter your Gmail App Password" autocomplete="current-password" required />
                 </div>
                 <div class="form-group">
                     <label for="desired_salary">Your Preferred Salary (in LPA)</label>
@@ -77,8 +78,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="hr-email">HR's Data</label>
-                    <textarea id="hr-email" name="HR-email" placeholder="Enter HR's data (e.g., email, name, roles)"
+                    <label for="hr-data">HR's Data</label>
+                    <textarea id="hr-data" name="hr-data" placeholder="Enter HR's data (e.g., email, name, roles)"
                         rows="4"></textarea>
                 </div>
                 <div class="form-group">
@@ -127,6 +128,7 @@
     <script>
         document.getElementById("jobForm").addEventListener("submit", async function (event) {
             event.preventDefault();  // Prevent form submission (default behavior)
+            console.log("Form submission prevented");
 
             // Show loading animation
             document.getElementById("loading").style.display = "block";
@@ -139,15 +141,16 @@
                 role: formData.get("role")?.trim() || "",
                 batch: formData.get("batch")?.trim() || "",
                 location: formData.get("location")?.trim() || "",
-                desired_salary: formData.get("desired_salary")?.trim() || "",
+                desired_salary: parseInt(formData.get("desired_salary")?.trim()) || 0,
                 user_email: formData.get("user_email")?.trim() || "",
                 app_password: formData.get("app_password")?.trim() || "",
                 email_content: formData.get("email_content")?.trim() || ""
             };
             console.log("Request Payload:", data);
             try {
+                console.log("Sending request to backend...");
                 // Send a POST request to FastAPI backend
-                const response = await fetch("http://127.0.0.1:8000/run_script/", {
+                const response = await fetch("http://127.0.0.1:8000/run_script", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -159,7 +162,7 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                console / log(response.status)
+                console.log(response.status)
                 // Parse JSON response
                 const result = await response.json();
                 console.log(result)
@@ -176,6 +179,7 @@
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("result").innerText = `Error: ${error.message}`;
             }
+            return false;
         });
     </script>
 </body>
