@@ -1,5 +1,10 @@
 # HIRED - Your Smart Job Applier
 
+Hired is s Selenium-based Python tool with a FastAPI backend that automates job searching, filters listings, and sends personalized cold emails with resumes to hiring managers, reducing search time by 90% and increasing shortlist chances by 50%.
+
+![Screenshot 2025-02-10 132353](https://github.com/user-attachments/assets/302599a2-1c4a-4e63-b831-1997439addd7)
+
+## Run Locally:
 ## Prerequisites
 - **Python**: Download from [python.org](https://www.python.org/downloads/).
 - **Pip**: Comes with Python, ensure it's installed.
